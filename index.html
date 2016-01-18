@@ -1,0 +1,300 @@
+
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Rx.NET </title>
+
+		<link rel="stylesheet" href = "css/bootstrap.css">
+	
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Rx.NET</h1>
+					<h3>pour ceux qui connaissent déjà RxJS</h3>
+				</section>
+
+
+
+<section>
+	<h1>Le typage...</h1>
+	<p>
+		
+	</p>
+	<aside class="notes">
+        Opérateurs spécifiques à certains types<br/>
+		le type unit<br/>
+		on ne peut pas faire de merge avec des choux et des carottes<br/>
+	</aside>
+</section>
+
+
+<section>
+	<h1>Les opérateurs</h1>
+	<p>
+		Pas de Map...<br/>
+		... ni de FlatMap<br/>
+	</p>
+	<aside class="notes">
+        des majuscules partout
+        Lien fort avec LINQ
+
+    </aside>
+</section>
+
+<section>
+	<h1>Les expressions LINQ</h1>
+	<p>
+		
+		<pre>
+			<code data-trim>
+from quote in quotes
+where quote.Symbol == "MSFT"
+select quote;
+			</code>
+		</pre>
+	</p>
+	<aside class="notes">
+        Select<br/>
+    </aside>
+</section>
+
+<section>
+	<h1>Les expressions LINQ</h1>
+	<p>
+		
+		<pre>
+			<code data-trim>
+from market in markets
+from quote in market.quotes
+where quote.Symbol == "MSFT"
+select quote;
+			</code>
+		</pre>
+	</p>
+	<aside class="notes">
+		SelectMany<br/>
+    </aside>
+</section>
+
+
+
+<section>
+	<h1>Jointures et Rx...</h1>
+	<p>
+		
+		<pre>
+			<code data-trim>
+from start in mouseDown
+join move in mouseMove
+on mouseUp equals Observable.Empty&lt;Unit&gt;() into moveGroup
+			</code>
+		</pre>
+	</p>
+	<aside class="notes">
+        Pas très intuitif<br/>
+    </aside>
+</section>
+
+
+<section>
+	<h1>A partir de</h1>
+	<p style="text-align: left;">
+'event' .NET <br/>
+Anciennes API async APM<br/>
+Task, <br/>
+et IEnumerable
+	</p>
+
+<aside class="notes">
+  avec la méthode ToObservable()
+</aside>
+
+</section>
+
+<section>
+	<h1>Création d'Observable</h1>
+	<pre>
+		<code data-trim>
+var obs = Read().ToObservable();
+
+IEnumerable&lt;string&gt; Read() {
+	while (true)
+		yield return Console.ReadLine();
+}
+
+		</code>
+	</pre>
+</section>
+
+
+<section>
+	<h1>Lien avec async/await</h1>
+	<p>
+		<pre>
+			<code data-trim>
+				await myObservable;
+			</code>
+		</pre>
+	</p>
+</section>
+
+
+<section>
+	<h1>Des threads et plus de schedulers</h1>
+	<p>
+		ImmediateScheduler<br/>
+		CurrentThreadScheduler<br/>
+		TaskPoolScheduler<br/>
+	</p>
+	<aside class="notes">
+        CurrentThreadScheduler c'est le trampoline JS<br/>
+    </aside>
+</section>
+
+<section>
+	<h1>NO LOCK!</h1>
+	<p>
+		EventLoopScheduler FTW
+	</p>
+</section>
+
+<section>
+	<h1>A propos de schedulers...</h1>
+	<p>
+		ObserveOn ?
+	</p>
+	<p>
+		SubscribeOn ?
+	</p>
+</section>
+
+
+
+<section>
+	<h1>Ca imprime quoi ?</h1>
+	<p>
+<pre>
+		<code data-trim>	
+Observable.Range(1, 10)
+	.ObserveOn(Scheduler.TaskPool)
+	.Subscribe(
+	    x =>
+	    {
+	        Thread.Sleep(1000 - (100 * x));
+	        Console.Out.WriteLine( x 
+	        	+ "  in thread " 
+	        	+ Thread.CurrentThread.ManagedThreadId);
+	    }
+	);
+	</code>
+	</pre>
+	</p>
+	<aside class="notes">
+        les guaranties de sérialisation
+    </aside>
+</section>
+
+<section>
+	<h1>Rx ça sérialise !</h1>
+	<p>
+<pre>
+		<code data-trim>	
+1  in thread 8
+2  in thread 9
+3  in thread 8
+4  in thread 8
+5  in thread 14
+6  in thread 9
+7  in thread 13
+8  in thread 9
+9  in thread 14
+10  in thread 9
+</code>
+	</pre>
+	</p>
+	<aside class="notes">
+        les guaranties de sérialisation
+    </aside>
+</section>
+
+
+<section>
+	<h1>... dans le doute</h1>
+	<p>
+		Observable.Synchronize()
+	</p>
+	<aside class="notes">
+        ça s'appelle Serialize dans d'autres languages
+        utilie notamment avec les Subject	
+    </aside>
+</section>
+
+
+
+
+
+
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+		
+	</body>
+</html>
